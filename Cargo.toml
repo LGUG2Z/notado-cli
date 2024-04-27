@@ -1,0 +1,19 @@
+[package]
+name = "notado-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["Jade Iqbal <jadeiqbal@fastmail.com>"]
+description = "A CLI for interacting with https://notado.app"
+repository = "https://github.com/LGUG2Z/notado-cli"
+license-file = "LICENSE"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive"] }
+graphql_client = "0.14"
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

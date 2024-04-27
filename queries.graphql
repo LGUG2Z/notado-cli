@@ -1,0 +1,9 @@
+query Search($query: String!) {
+  search(query: $query) {
+    content
+    url
+    title
+    created
+    tags
+  }
+}
