@@ -121,3 +121,104 @@ m any welfare or healthcare, you can't just be apolitical.\n\nIf you have any em
   }
 ]
 ```
+
+### QuoteGen
+
+The `quote-gen` takes an input file (`sources` by default) of newline-separated
+URLs from supported commentary sites and attempts to populate a `library.json`
+file with the data needed to render those notes
+via [shortcodes](https://lgug2z.com/articles/im-done-writing-shortcodes-for-other-websites/)
+to embed them into static site generator pages.
+
+If an entry for a source already exists in `library.json`, it will be skipped.
+
+If a URL in the source file does not correspond to a note in your account, it
+will be skipped.
+
+```text
+# sources
+
+https://lobste.rs/s/rzskjk/i_think_i_m_done_thinking_about_genai_for#c_l9x7we
+https://tildes.net/~tech/17xe/permanent_archival_formats_do_they_exist#comment-9feo
+https://old.reddit.com/r/patientgamers/comments/udzo11/i_miss_the_days_of_server_browsers_and_community/i6lga1o/
+https://programming.dev/comment/5789966
+https://discourse.nixos.org/t/should-organizations-relating-to-the-defense-sector-being-able-to-sponsor-nixos/41252/6
+https://defcon.social/@corbden/113473397794111625
+https://bsky.app/profile/hmsnofun.bsky.social/post/3lmr6sm5k4k2b
+https://twitter.com/mitchellh/status/1744850961309597855?s=12
+https://www.youtube.com/watch?v=k0J0Dxf5JKc&lc=Ugwsmg7c0JpYiXyADQV4AaABAg
+```
+
+```text
+❯ notado-cli quote-gen
+Adding quote data for https://bsky.app/profile/hmsnofun.bsky.social/post/3lmr6sm5k4k2b to library.json
+Adding quote data for https://defcon.social/@corbden/113473397794111625 to library.json
+Adding quote data for https://discourse.nixos.org/t/should-organizations-relating-to-the-defense-sector-being-able-to-sponsor-nixos/41252/6 to library.json
+Adding quote data for https://lobste.rs/s/rzskjk/i_think_i_m_done_thinking_about_genai_for#c_l9x7we to library.json
+Adding quote data for https://old.reddit.com/r/patientgamers/comments/udzo11/i_miss_the_days_of_server_browsers_and_community/i6lga1o/ to library.json
+Adding quote data for https://programming.dev/comment/5789966 to library.json
+Adding quote data for https://tildes.net/~tech/17xe/permanent_archival_formats_do_they_exist#comment-9feo to library.json
+Adding quote data for https://twitter.com/mitchellh/status/1744850961309597855?s=12 to library.json
+Adding quote data for https://www.youtube.com/watch?v=k0J0Dxf5JKc&lc=Ugwsmg7c0JpYiXyADQV4AaABAg to library.json
+```
+
+```jsonc
+// library.json
+
+{
+  "https://bsky.app/profile/hmsnofun.bsky.social/post/3lmr6sm5k4k2b": {
+    "title": "hmsnofun.bsky.social",
+    "source_display": "bsky.app",
+    "source_url": "https://bsky.app/profile/hmsnofun.bsky.social/post/3lmr6sm5k4k2b",
+    "content": "the labor of art is mostly invisible. what you don't see in a finished piece is all the hours of thought it required, all the little discoveries and surprises and tragedies of production. art IS the process. if you aren't  interested in the process, then i don't really know why you want to be artist"
+  },
+  "https://defcon.social/@corbden/113473397794111625": {
+    "title": "corbden",
+    "source_display": "defcon.social",
+    "source_url": "https://defcon.social/@corbden/113473397794111625",
+    "content": "Work isn't hard when you've got the capacity and capability to do what is needed, and you're in a good mood. Work is fulfilling when it is purposeful and not frustrating.\r\n\r\nThe conditions under which many of us were taught to work were not ideal, and only prepared us to tolerate without complaint the conditions under which we were expected to perform in our adult lives, conditions usually bad ONLY because the powerful need to abuse, and not for any necessary reason. \r\n\r\nThat's why nobody likes work. We're wired to like work, but we've been made to dislike it. \r\n\r\nBecause the cruelty is the point. Exploitation is the point. Dominance is the point."
+  },
+  "https://discourse.nixos.org/t/should-organizations-relating-to-the-defense-sector-being-able-to-sponsor-nixos/41252/6": {
+    "title": "jakehamilton",
+    "source_display": "discourse.nixos.org",
+    "source_url": "https://discourse.nixos.org/t/should-organizations-relating-to-the-defense-sector-being-able-to-sponsor-nixos/41252/6",
+    "content": "I do not want any of my work associated with arms dealers and/or the deaths of others. Having any sponsorship from a military entity steps over that line. I would much prefer that the NixOS Foundation set ethical guidelines for accepting sponsorship. I do not believe it is absurd to suggest that we shouldn’t take money from people who are responsible for the slaughter of others. Rejecting sponsorship from weapons manufacturers should be a reasonable standard.\n\nI would like to be clear here: this is a significant problem for myself and many others and will result in community fracture if it is not resolved. I’m sure we would all prefer to not split into two groups of “people okay with killing others” and “people who think killing others is bad”."
+  },
+  "https://lobste.rs/s/rzskjk/i_think_i_m_done_thinking_about_genai_for#c_l9x7we": {
+    "title": "mattgreenrocks",
+    "source_display": "lobste.rs",
+    "source_url": "https://lobste.rs/s/rzskjk/i_think_i_m_done_thinking_about_genai_for#c_l9x7we",
+    "content": "Yep. I arrived at a similar conclusion.\n\nLife is hard, but doing The Work (in whatever subject(s) that is for you) is one way to find solace and unmediated joy. It’s not just any work (hence the capitalization), but work that is good for me to do. I can apply myself to a challenge, work with other people to build things, and learn more about it in an endless cycle. It’s an infinite game. Anything that gets in the way of that cycle is harmful *for me:* more management than dev, politicking for better titles, even screwing around with my dev environment for too long. It’s about the work of shipping, refining, and learning. When that gets out of balance I become highly vulnerable to anxiety.\n\nWhere do LLMs fit there? Certainly not in the core loop! Part of The Work necessitates some time spent frustrated: that’s a primary indication of learning (and very easy to forget). I’m okay with them at the periphery of it, or sometimes spitballing things with them.\n\nBut there’s a real joy to applying your skills, working through frustration and feeling stuck, and gaining confidence that I would never want to outsource to an LLM. It’s essential for human flourishing."
+  },
+  "https://old.reddit.com/r/patientgamers/comments/udzo11/i_miss_the_days_of_server_browsers_and_community/i6lga1o/": {
+    "title": "szthesquid",
+    "source_display": "old.reddit.com",
+    "source_url": "https://old.reddit.com/r/patientgamers/comments/udzo11/i_miss_the_days_of_server_browsers_and_community/i6lga1o/",
+    "content": "This is one of the big reasons my whole Team Fortress 2 group can't go back to the game. We played *thousands* of hours together in its early years. At the time, some of us had 100% achievement completion.\n\nWe played on our local Toronto servers and got to know all the regulars. It's *such* a different game when you play with a community who recognizes player and clan names by sight and develop respect and rivalries.\n\nThe time when we skilled up enough to contend with the server's top Sniper.\n\nThe time when the server's best medic attached himself to me for the whole game because he recognized me as the best offensive player on the team.\n\nThe times when we'd all hop on the same team and other players would switch teams specifically to play with or against us. \n\nThe times when all talk was enabled and we could hear the other team get demoralized and panicked when they realized that our buddy was playing Spy this game.\n\nChecking the server leaderboards after the session and realizing our whole group had broken into the top 100.\n\nThe feeling that if we went out for a walk and ran into another Team Fortress player on the street, we might actually recognize their user name. \n\nQuick play with randos will never be the same."
+  },
+  "https://programming.dev/comment/5789966": {
+    "title": "bugsmith",
+    "source_display": "programming.dev",
+    "source_url": "https://programming.dev/comment/5789966",
+    "content": "I particularly enjoyed a recent company meeting that spent considerable time talking about the importance of flow state. It had an awkward pregnant pause when someone (usually very quiet) unmuted to ask, \"is the policy to increase the number of days we must spend in our open-plan office kind of undermining this?\". Literally all of our directors just shifted on their seats hoping another would answer that.\n\nEventually, HR director stated \"Not at all, that's what headphones are for!\"\n\nWhich was particularly delightful, as our tech director had only 20 minutes before stated how he would like to discourage people sitting in the office in silos with their headphones on."
+  },
+  "https://tildes.net/~tech/17xe/permanent_archival_formats_do_they_exist#comment-9feo": {
+    "title": "xk3",
+    "source_display": "tildes.net",
+    "source_url": "https://tildes.net/~tech/17xe/permanent_archival_formats_do_they_exist#comment-9feo",
+    "content": "All information *eventually* gives way to entropy.\n\nThe only real solution is constant refresh, validation, and multiple copies of data. The only reason we know about many historical things is due to multiple copies of organisms existing and we are able to find the lucky ones that were preserved in tree sap.\n\nLikewise, we are lucky to find old stories because they were passed down through constant rehearsal in oral tradition and/or because some crazy guy brought some scrolls up to a mountain. There are probably many scrolls that we don't know about because they weathered away. We just find the lucky ones. It's chance.\n\nAnalog may last longer than digital data but I wouldn't trust just one type of storage. If you care about something you need to have multiple copies and validate that the data is still readable every year or at the very least 5-10 years. If (VHS) players are no longer manufactured you also need to consider that aspect as well.\n\nEven stone tablets have bitrot at a timescale of months if the conditions are right"
+  },
+  "https://twitter.com/mitchellh/status/1744850961309597855?s=12": {
+    "title": "mitchellh",
+    "source_display": "twitter.com",
+    "source_url": "https://twitter.com/mitchellh/status/1744850961309597855?s=12",
+    "content": "For open source in particular, the misbalance that always made me sad was when an issue reporter spends 30 seconds writing an issue that's going to take a maintainer (working for free) hours, days, weeks to resolve and maintain, then gets mad when its not fixed quickly. 🤔"
+  },
+  "https://www.youtube.com/watch?v=k0J0Dxf5JKc&lc=Ugwsmg7c0JpYiXyADQV4AaABAg": {
+    "title": "QuantaStarfire",
+    "source_display": "www.youtube.com",
+    "source_url": "https://www.youtube.com/watch?v=k0J0Dxf5JKc&lc=Ugwsmg7c0JpYiXyADQV4AaABAg",
+    "content": "I feel like the decline of the arena shooter can also be attributed to the lack of dedicated servers and the lack of editing tools, because both of these things together are what have allowed games like DOOM and Quake to continue to exist for almost three decades now.\r\n\r\nDedicated servers allow people to form small communities of regular players, while editors allow people to create new modes and levels for the game to keep things fresh.\r\n\r\nPublishers don't like either of these things since a game you buy once and can play forever with nigh-infinite content doesn't generate the nigh-infinite revenue they want, so of course those features had to either be taken out back and shot, or at least be put under very heavy developer control."
+  }
+}
+```
