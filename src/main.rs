@@ -102,19 +102,36 @@ fn main() -> anyhow::Result<()> {
                 let source = s.trim();
                 if Url::parse(source).is_ok() {
                     if !library.contains_key(source) {
-                        match client
-                            .get("https://notado.app/quote")
-                            .query(&[("source", source)])
-                            .header("X-API-TOKEN", &token)
-                            .send()?
-                            .json::<QuoteData>()
-                        {
-                            Ok(data) => {
-                                println!("Adding quote data for {source} to library.json");
-                                library.insert(source.to_string(), data);
+                        if source.starts_with("https://notado.app/quote/") {
+                            match client
+                                .get(format!("{source}/json"))
+                                .header("X-API-TOKEN", &token)
+                                .send()?
+                                .json::<QuoteData>()
+                            {
+                                Ok(data) => {
+                                    println!("Adding quote data for {source} to library.json");
+                                    library.insert(source.to_string(), data);
+                                }
+                                Err(_) => {
+                                    println!("Skipping {source} as there wasn't a matching note in your Notado account");
+                                }
                             }
-                            Err(_) => {
-                                println!("Skipping {source} as there wasn't a matching note in your Notado account");
+                        } else {
+                            match client
+                                .get("https://notado.app/quote")
+                                .query(&[("source", source)])
+                                .header("X-API-TOKEN", &token)
+                                .send()?
+                                .json::<QuoteData>()
+                            {
+                                Ok(data) => {
+                                    println!("Adding quote data for {source} to library.json");
+                                    library.insert(source.to_string(), data);
+                                }
+                                Err(_) => {
+                                    println!("Skipping {source} as there wasn't a matching note in your Notado account");
+                                }
                             }
                         }
                     } else {
