@@ -1,6 +1,9 @@
+use crate::queries::import_notes::NewImportNote;
+use chrono::NaiveDateTime;
 use clap::Parser;
 use graphql_client::GraphQLQuery;
 use graphql_client::Response;
+use kobo_db_tools::ParseOption;
 use reqwest::blocking::ClientBuilder;
 use reqwest::header::HeaderMap;
 use reqwest::header::HeaderValue;
@@ -33,6 +36,16 @@ struct QuoteGen {
 }
 
 #[derive(Parser)]
+struct SaveKoboHighlights {
+    /// Path to a Kobo database file
+    #[arg(long, default_value = "/Volumes/KOBOeReader/.kobo/KoboReader.sqlite")]
+    kobo_database: PathBuf,
+    /// Print the highlights as JSON, without saving them to your Notado account
+    #[arg(long, short, action)]
+    print: bool,
+}
+
+#[derive(Parser)]
 enum SubCommand {
     /// Run a fuzzy search against all notes in your library
     Search(Search),
@@ -40,12 +53,17 @@ enum SubCommand {
     Backup,
     /// Generate a JSON library of quotes that can be embedded via shortcodes into static site generator pages
     QuoteGen(QuoteGen),
+    /// Save highlights from a Kobo database file to your Notado account
+    SaveKoboHighlights(SaveKoboHighlights),
 }
 
 fn main() -> anyhow::Result<()> {
     let opts: Opts = Opts::parse();
 
     let token = std::env::var("NOTADO_API_TOKEN")?;
+    let domain =
+        std::env::var("NOTADO_ENDPOINT").unwrap_or_else(|_| String::from("https://notado.app"));
+    let graphql_endpoint = format!("{domain}/graphql");
 
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
@@ -59,7 +77,7 @@ fn main() -> anyhow::Result<()> {
     match opts.subcmd {
         SubCommand::Search(args) => {
             let res = client
-                .post("https://notado.app/graphql")
+                .post(graphql_endpoint)
                 .json(&queries::Search::build_query(queries::search::Variables {
                     query: args.query,
                 }))
@@ -77,7 +95,7 @@ fn main() -> anyhow::Result<()> {
         }
         SubCommand::Backup => {
             let res = client
-                .get("https://notado.app/export/notes.json")
+                .get(format!("{domain}/export/notes.json"))
                 .header("X-API-TOKEN", token)
                 .send()?;
 
@@ -119,7 +137,7 @@ fn main() -> anyhow::Result<()> {
                             }
                         } else {
                             match client
-                                .get("https://notado.app/quote")
+                                .get(format!("{domain}/quote"))
                                 .query(&[("source", source)])
                                 .header("X-API-TOKEN", &token)
                                 .send()?
@@ -141,6 +159,59 @@ fn main() -> anyhow::Result<()> {
             }
 
             std::fs::write("library.json", serde_json::to_string_pretty(&library)?)?;
+        }
+        SubCommand::SaveKoboHighlights(args) => {
+            let analysis =
+                kobo_db_tools::Parser::parse_from_str(args.kobo_database, ParseOption::All)?;
+
+            let mut notes = vec![];
+
+            if let Some(bookmarks) = &analysis.bookmarks {
+                for b in bookmarks {
+                    let mut tags = vec![];
+                    if let Some(annotation) = &b.annotation {
+                        for possible_tag in annotation.split_whitespace() {
+                            if possible_tag.starts_with('.') {
+                                tags.push(possible_tag.trim_start_matches('.'));
+                            }
+                        }
+                    }
+
+                    notes.push(NewImportNote {
+                        content: b.content.clone(),
+                        url: format!(
+                            "calibre://search/_?q=title:{} author:{}",
+                            b.book_title, b.author
+                        ),
+                        title: b.book_title.clone(),
+                        created: b
+                            .create_date
+                            .parse::<NaiveDateTime>()
+                            .ok()
+                            .map(|ntd| ntd.and_utc()),
+                        tags: Some(tags.iter().map(|s| s.to_string()).collect()),
+                        author: Some(b.author.clone()),
+                        chapter: b.chapter_title.clone(),
+                    });
+                }
+            }
+
+            if args.print {
+                println!("{}", serde_json::to_string_pretty(&notes)?);
+            } else if !notes.is_empty() {
+                let len = notes.len();
+                let res = client
+                    .post(graphql_endpoint)
+                    .json(&queries::ImportNotes::build_query(
+                        queries::import_notes::Variables { notes },
+                    ))
+                    .header("X-API-TOKEN", token)
+                    .send()?;
+
+                if res.text()?.contains(r#""importNotes":true"#) {
+                    println!("Saved {len} highlights to your Notado account");
+                }
+            }
         }
     }
 

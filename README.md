@@ -124,9 +124,9 @@ m any welfare or healthcare, you can't just be apolitical.\n\nIf you have any em
 
 ### QuoteGen
 
-The `quote-gen` takes an input file (`sources` by default) of newline-separated
-URLs from supported commentary sites and attempts to populate a `library.json`
-file with the data needed to render those notes
+The `quote-gen` command takes an input file (`sources` by default) of
+newline-separated URLs from supported commentary sites and attempts to populate
+a `library.json` file with the data needed to render those notes
 via [shortcodes](https://lgug2z.com/articles/im-done-writing-shortcodes-for-other-websites/)
 to embed them into static site generator pages.
 
@@ -222,3 +222,11 @@ Adding quote data for https://www.youtube.com/watch?v=k0J0Dxf5JKc&lc=Ugwsmg7c0Jp
   }
 }
 ```
+
+### Save Kobo Highlights
+
+The `save-kobo-highlights` command takes path to a Kobo database file and imports
+all highlights in the database.
+
+The `--print` flag can be passed to output the highlights to be saved as JSON to
+stdout without actually saving them.
